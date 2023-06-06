@@ -1,2 +1,2 @@
 # gltut-go
-OpenGL tutorial (https://paroj.github.io/gltut) in Go
+OpenGL tutorial (https://github.com/Overv/Open.GL) in Go
