@@ -26312,8 +26312,12 @@ import "C"
 /* API */
 
 // GLEWAPI GLenum GLEWAPIENTRY glewInit (void);
-func GlewInit() GLenum {
-	C.glewExperimental = C.GL_TRUE
+func GlewInit(experimental bool) GLenum {
+	if experimental {
+		C.glewExperimental = C.GL_TRUE
+	} else {
+		C.glewExperimental = C.GL_FALSE
+	}
 	return GLenum(C.glewInit())
 }
 
@@ -26332,4 +26336,3 @@ func GlewInit() GLenum {
 // GLEWAPI GLboolean GLEWAPIENTRY glewGetExtension (const char *name);
 // GLEWAPI const GLubyte * GLEWAPIENTRY glewGetErrorString (GLenum error);
 // GLEWAPI const GLubyte * GLEWAPIENTRY glewGetString (GLenum name);
- 

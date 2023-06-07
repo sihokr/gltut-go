@@ -9,26 +9,47 @@ package gl
 import "C"
 
 // typedef unsigned int GLenum;
-type GLenum uint
+type GLenum uint32
 
 // typedef unsigned char GLboolean;
 type GLboolean byte
 
 // typedef unsigned int GLbitfield;
+type GLbitfield uint32
+
 // typedef signed char GLbyte;
+type GLbyte int8
+
 // typedef short GLshort;
+type GLshort int16
+
 // typedef int GLint;
+type GLint int32
+
 // typedef int GLsizei;
+type GLsizei int
+
 // typedef unsigned char GLubyte;
+type GLubyte uint8
+
 // typedef unsigned short GLushort;
+type GLushort uint16
 
 // typedef unsigned int GLuint;
-type GLuint uint
+type GLuint uint32
 
 // typedef float GLfloat;
+type GLfloat float32
+
 // typedef float GLclampf;
+type GLclampf float32
+
 // typedef double GLdouble;
+type GLdouble float64
+
 // typedef double GLclampd;
+type GLclampd float64
+
 // typedef void GLvoid;
 
 // #define GL_VERSION_1_1 1
@@ -80,6 +101,18 @@ type GLuint uint
 // #define GL_QUADS 0x0007
 // #define GL_QUAD_STRIP 0x0008
 // #define GL_POLYGON 0x0009
+const (
+	GL_POINTS         GLenum = C.GL_POINTS
+	GL_LINES          GLenum = C.GL_LINES
+	GL_LINE_LOOP      GLenum = C.GL_LINE_LOOP
+	GL_LINE_STRIP     GLenum = C.GL_LINE_STRIP
+	GL_TRIANGLES      GLenum = C.GL_TRIANGLES
+	GL_TRIANGLE_STRIP GLenum = C.GL_TRIANGLE_STRIP
+	GL_TRIANGLE_FAN   GLenum = C.GL_TRIANGLE_FAN
+	GL_QUADS          GLenum = C.GL_QUADS
+	GL_QUAD_STRIP     GLenum = C.GL_QUAD_STRIP
+	GL_POLYGON        GLenum = C.GL_POLYGON
+)
 
 // #define GL_ZERO 0
 // #define GL_ONE 1
@@ -119,6 +152,19 @@ const (
 // #define GL_3_BYTES 0x1408
 // #define GL_4_BYTES 0x1409
 // #define GL_DOUBLE 0x140A
+const (
+	GL_BYTE           GLenum = C.GL_BYTE
+	GL_UNSIGNED_BYTE  GLenum = C.GL_UNSIGNED_BYTE
+	GL_SHORT          GLenum = C.GL_SHORT
+	GL_UNSIGNED_SHORT GLenum = C.GL_UNSIGNED_SHORT
+	GL_INT            GLenum = C.GL_INT
+	GL_UNSIGNED_INT   GLenum = C.GL_UNSIGNED_INT
+	GL_FLOAT          GLenum = C.GL_FLOAT
+	GL_2_BYTES        GLenum = C.GL_2_BYTES
+	GL_3_BYTES        GLenum = C.GL_3_BYTES
+	GL_4_BYTES        GLenum = C.GL_4_BYTES
+	GL_DOUBLE         GLenum = C.GL_DOUBLE
+)
 
 // #define GL_NONE 0
 // #define GL_FRONT_LEFT 0x0400
@@ -746,7 +792,12 @@ const (
 // WINGDIAPI void APIENTRY glDepthRange (GLclampd zNear,GLclampd zFar);
 // WINGDIAPI void APIENTRY glDisable(GLenum cap);
 // WINGDIAPI void APIENTRY glDisableClientState(GLenum array);
+
 // WINGDIAPI void APIENTRY glDrawArrays(GLenum mode,GLint first,GLsizei count);
+func GlDrawArrays(mode GLenum, first int, count int) {
+	C.glDrawArrays(C.GLenum(mode), C.GLint(first), C.GLsizei(count))
+}
+
 // WINGDIAPI void APIENTRY glDrawBuffer(GLenum mode);
 // WINGDIAPI void APIENTRY glDrawElements(GLenum mode,GLsizei count,GLenum type,const GLvoid *indices);
 // WINGDIAPI void APIENTRY glDrawPixels(GLsizei width,GLsizei height,GLenum format,GLenum type,const GLvoid *pixels);
@@ -783,7 +834,12 @@ const (
 // WINGDIAPI void APIENTRY glGetBooleanv(GLenum pname,GLboolean *params);
 // WINGDIAPI void APIENTRY glGetClipPlane(GLenum plane,GLdouble *equation);
 // WINGDIAPI void APIENTRY glGetDoublev(GLenum pname,GLdouble *params);
+
 // WINGDIAPI GLenum APIENTRY glGetError(void);
+func GlGetError() GLenum {
+	return GLenum(C.glGetError())
+}
+
 // WINGDIAPI void APIENTRY glGetFloatv(GLenum pname,GLfloat *params);
 // WINGDIAPI void APIENTRY glGetIntegerv(GLenum pname,GLint *params);
 // WINGDIAPI void APIENTRY glGetLightfv(GLenum light,GLenum pname,GLfloat *params);

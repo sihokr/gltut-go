@@ -2,15 +2,22 @@ package main
 
 import (
 	"fmt"
-	"runtime"
+	"os"
+	_ "runtime"
 
 	"example.com/gltut_go/gl"
 	"example.com/gltut_go/sdl2"
 )
 
+var vertices = []float32{
+	0.0, 0.5, // Vertex 1 (X, Y)
+	0.5, -0.5, // Vertex 2 (X, Y)
+	-0.5, -0.5, // Vertex 3 (X, Y)
+}
+
 func main() {
 
-	runtime.LockOSThread()
+	// runtime.LockOSThread()
 
 	sdl2.SDL_Init(sdl2.SDL_INIT_VIDEO)
 
@@ -28,12 +35,48 @@ func main() {
 
 	var context sdl2.SDL_GLContext = sdl2.SDL_GL_CreateContext(window)
 
-	gl.GlewInit()
+	gl.GlewInit(true)
 
-	var buffers = make([]uint32, 1)
-	gl.GlGenBuffers(1, buffers)
+	var vao gl.GLuint
+	gl.GlGenVertexArrays1(&vao)
+	checkGlError()
+	gl.GlBindVertexArray(vao)
+	checkGlError()
 
-	fmt.Println(buffers[0])
+	var vbo gl.GLuint
+	gl.GlGenBuffers1(&vbo)
+	gl.GlBindBuffer(gl.GL_ARRAY_BUFFER, vbo)
+	gl.GlBufferData_f(gl.GL_ARRAY_BUFFER, len(vertices), vertices, gl.GL_STATIC_DRAW)
+
+	checkGlError()
+
+	var vert_shader = createShader(gl.GL_VERTEX_SHADER, "shader.vert")
+	var frag_shader = createShader(gl.GL_FRAGMENT_SHADER, "shader.frag")
+
+	fmt.Printf("Vertex shader: %v\n", vert_shader)
+	fmt.Printf("Fragment shader: %v\n", frag_shader)
+
+	var prog = gl.GlCreateProgram()
+	checkGlError()
+	gl.GlAttachShader(prog, vert_shader)
+	checkGlError()
+	gl.GlAttachShader(prog, frag_shader)
+	checkGlError()
+
+	gl.GlBindFragDataLocation(prog, 0, "outColor")
+	checkGlError()
+
+	gl.GlLinkProgram(prog)
+	checkGlError()
+	gl.GlUseProgram(prog)
+	checkGlError()
+
+	var pos_attr = gl.GlGetAttribLocation(prog, "position")
+	checkGlError()
+	gl.GlVertexAttribPointer(gl.GLuint(pos_attr), 2, gl.GL_FLOAT, false, 0, nil)
+	checkGlError()
+	gl.GlEnableVertexAttribArray(gl.GLuint(pos_attr))
+	checkGlError()
 
 main_loop:
 	for {
@@ -56,6 +99,9 @@ main_loop:
 			}
 		} // if
 
+		gl.GlDrawArrays(gl.GL_TRIANGLES, 0, 3)
+		checkGlError()
+
 		sdl2.SDL_GL_SwapWindow(window)
 
 	} // for
@@ -63,4 +109,43 @@ main_loop:
 	sdl2.SDL_GL_DeleteContext(context)
 	sdl2.SDL_DestroyWindow(window)
 	sdl2.SDL_Quit()
+}
+
+func createShader(shader_type gl.GLenum, file string) gl.GLuint {
+
+	var src string
+	if a, err := os.ReadFile(file); nil == err {
+		src = string(a)
+	} else {
+		fmt.Printf("Cannot open file '%v': %v\n", file, err)
+	}
+
+	var shader = gl.GlCreateShader(shader_type)
+	gl.GlShaderSource1(shader, &src, nil)
+	checkGlError()
+	gl.GlCompileShader(shader)
+	checkGlError()
+
+	var status gl.GLint
+	gl.GlGetShaderiv(shader, gl.GL_COMPILE_STATUS, &status)
+	checkGlError()
+
+	if gl.GL_TRUE != gl.GLboolean(status) {
+		fmt.Println("Compiling shader failed")
+	}
+
+	// Retrieve log
+	var log string
+	gl.GlGetShaderInfoLog(shader, 512, nil, &log)
+	if len(log) > 0 {
+		fmt.Println(log)
+	}
+
+	return shader
+}
+
+func checkGlError() {
+	if err := gl.GlGetError(); 0 != err {
+		panic(fmt.Sprintf("GL error: %v", err))
+	}
 }

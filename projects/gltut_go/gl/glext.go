@@ -8,8 +8,11 @@ package gl
 // #include <stdlib.h>
 // #include "fn_bridge.h"
 //
+//  typedef void * _gl_cgo_void_ptr;
+//
 import "C"
 import (
+	"example.com/gltut_go/gl/internal"
 	"unsafe"
 )
 
@@ -453,8 +456,14 @@ import (
 // #define GL_CURRENT_QUERY                  0x8865
 // #define GL_QUERY_RESULT                   0x8866
 // #define GL_QUERY_RESULT_AVAILABLE         0x8867
+
 // #define GL_ARRAY_BUFFER                   0x8892
 // #define GL_ELEMENT_ARRAY_BUFFER           0x8893
+const (
+	GL_ARRAY_BUFFER         GLenum = C.GL_ARRAY_BUFFER
+	GL_ELEMENT_ARRAY_BUFFER GLenum = C.GL_ELEMENT_ARRAY_BUFFER
+)
+
 // #define GL_ARRAY_BUFFER_BINDING           0x8894
 // #define GL_ELEMENT_ARRAY_BUFFER_BINDING   0x8895
 // #define GL_VERTEX_ATTRIB_ARRAY_BUFFER_BINDING 0x889F
@@ -464,6 +473,7 @@ import (
 // #define GL_BUFFER_ACCESS                  0x88BB
 // #define GL_BUFFER_MAPPED                  0x88BC
 // #define GL_BUFFER_MAP_POINTER             0x88BD
+
 // #define GL_STREAM_DRAW                    0x88E0
 // #define GL_STREAM_READ                    0x88E1
 // #define GL_STREAM_COPY                    0x88E2
@@ -473,6 +483,18 @@ import (
 // #define GL_DYNAMIC_DRAW                   0x88E8
 // #define GL_DYNAMIC_READ                   0x88E9
 // #define GL_DYNAMIC_COPY                   0x88EA
+const (
+	GL_STREAM_DRAW  GLenum = C.GL_STREAM_DRAW
+	GL_STREAM_READ  GLenum = C.GL_STREAM_READ
+	GL_STREAM_COPY  GLenum = C.GL_STREAM_COPY
+	GL_STATIC_DRAW  GLenum = C.GL_STATIC_DRAW
+	GL_STATIC_READ  GLenum = C.GL_STATIC_READ
+	GL_STATIC_COPY  GLenum = C.GL_STATIC_COPY
+	GL_DYNAMIC_DRAW GLenum = C.GL_DYNAMIC_DRAW
+	GL_DYNAMIC_READ GLenum = C.GL_DYNAMIC_READ
+	GL_DYNAMIC_COPY GLenum = C.GL_DYNAMIC_COPY
+)
+
 // #define GL_SAMPLES_PASSED                 0x8914
 // #define GL_SRC1_ALPHA                     0x8589
 // #define GL_VERTEX_ARRAY_BUFFER_BINDING    0x8896
@@ -497,6 +519,7 @@ import (
 // #define GL_SRC2_RGB                       0x8582
 // #define GL_SRC0_ALPHA                     0x8588
 // #define GL_SRC2_ALPHA                     0x858A
+
 // typedef void (APIENTRYP PFNGLGENQUERIESPROC) (GLsizei n, GLuint *ids);
 // typedef void (APIENTRYP PFNGLDELETEQUERIESPROC) (GLsizei n, const GLuint *ids);
 // typedef GLboolean (APIENTRYP PFNGLISQUERYPROC) (GLuint id);
@@ -525,11 +548,16 @@ import (
 // GLAPI void APIENTRY glGetQueryiv (GLenum target, GLenum pname, GLint *params);
 // GLAPI void APIENTRY glGetQueryObjectiv (GLuint id, GLenum pname, GLint *params);
 // GLAPI void APIENTRY glGetQueryObjectuiv (GLuint id, GLenum pname, GLuint *params);
+
 // GLAPI void APIENTRY glBindBuffer (GLenum target, GLuint buffer);
+func GlBindBuffer(target GLenum, buffer GLuint) {
+	C.fn_bridge_void_GLenum_GLuint(C.glBindBuffer, C.GLenum(target), C.GLuint(buffer))
+}
+
 // GLAPI void APIENTRY glDeleteBuffers (GLsizei n, const GLuint *buffers);
 
 // GLAPI void APIENTRY glGenBuffers (GLsizei n, GLuint *buffers);
-func GlGenBuffers(n int, buffers []uint32) {
+func GlGenBuffers(n int, buffers []GLuint) {
 
 	var buffers_c = C.malloc(C.ulonglong(n * C.sizeof_GLuint))
 	defer C.free(buffers_c)
@@ -540,14 +568,46 @@ func GlGenBuffers(n int, buffers []uint32) {
 	var p = uintptr(buffers_c)
 	for i := 0; i < n; i++ {
 		var p1 = (*C.GLuint)(unsafe.Pointer(p))
-		buffers[i] = uint32(*p1)
+		buffers[i] = GLuint(*p1)
 		p += uintptr(C.sizeof_GLuint)
 	} // for
 
 }
 
+func GlGenBuffers1(buffer *GLuint) {
+	var a = make([]GLuint, 1)
+	GlGenBuffers(1, a)
+	*buffer = a[0]
+}
+
 // GLAPI GLboolean APIENTRY glIsBuffer (GLuint buffer);
+
 // GLAPI void APIENTRY glBufferData (GLenum target, GLsizeiptr size, const void *data, GLenum usage);
+func GlBufferData_f(target GLenum, len int, data []float32, usage GLenum) {
+
+	var data_c = C.malloc(C.ulonglong(len * C.sizeof_float))
+	{
+		var p = uintptr(data_c)
+		for i := 0; i < len; i++ {
+			var p1 = (*C.float)(unsafe.Pointer(p))
+			*p1 = C.float(data[i])
+			p += uintptr(C.sizeof_float)
+		} // for
+	}
+
+	defer C.free(data_c)
+
+	var size = len * C.sizeof_float
+
+	C.fn_bridge_void_GLenum_GLsizeiptr_void_p_GLenum(
+		C.glBufferData,
+		C.GLenum(target),
+		C.GLsizeiptr(size),
+		data_c,
+		C.GLenum(usage),
+	)
+}
+
 // GLAPI void APIENTRY glBufferSubData (GLenum target, GLintptr offset, GLsizeiptr size, const void *data);
 // GLAPI void APIENTRY glGetBufferSubData (GLenum target, GLintptr offset, GLsizeiptr size, void *data);
 // GLAPI void *APIENTRY glMapBuffer (GLenum target, GLenum access);
@@ -593,8 +653,14 @@ func GlGenBuffers(n int, buffers []uint32) {
 // #define GL_MAX_VERTEX_ATTRIBS             0x8869
 // #define GL_VERTEX_ATTRIB_ARRAY_NORMALIZED 0x886A
 // #define GL_MAX_TEXTURE_IMAGE_UNITS        0x8872
+
 // #define GL_FRAGMENT_SHADER                0x8B30
 // #define GL_VERTEX_SHADER                  0x8B31
+const (
+	GL_FRAGMENT_SHADER GLenum = C.GL_FRAGMENT_SHADER
+	GL_VERTEX_SHADER   GLenum = C.GL_VERTEX_SHADER
+)
+
 // #define GL_MAX_FRAGMENT_UNIFORM_COMPONENTS 0x8B49
 // #define GL_MAX_VERTEX_UNIFORM_COMPONENTS  0x8B4A
 // #define GL_MAX_VARYING_FLOATS             0x8B4B
@@ -620,10 +686,18 @@ func GlGenBuffers(n int, buffers []uint32) {
 // #define GL_SAMPLER_CUBE                   0x8B60
 // #define GL_SAMPLER_1D_SHADOW              0x8B61
 // #define GL_SAMPLER_2D_SHADOW              0x8B62
+
 // #define GL_DELETE_STATUS                  0x8B80
 // #define GL_COMPILE_STATUS                 0x8B81
 // #define GL_LINK_STATUS                    0x8B82
 // #define GL_VALIDATE_STATUS                0x8B83
+const (
+	GL_DELETE_STATUS   GLenum = C.GL_DELETE_STATUS
+	GL_COMPILE_STATUS  GLenum = C.GL_COMPILE_STATUS
+	GL_LINK_STATUS     GLenum = C.GL_LINK_STATUS
+	GL_VALIDATE_STATUS GLenum = C.GL_VALIDATE_STATUS
+)
+
 // #define GL_INFO_LOG_LENGTH                0x8B84
 // #define GL_ATTACHED_SHADERS               0x8B85
 // #define GL_ACTIVE_UNIFORMS                0x8B86
@@ -743,24 +817,99 @@ func GlGenBuffers(n int, buffers []uint32) {
 // GLAPI void APIENTRY glStencilOpSeparate (GLenum face, GLenum sfail, GLenum dpfail, GLenum dppass);
 // GLAPI void APIENTRY glStencilFuncSeparate (GLenum face, GLenum func, GLint ref, GLuint mask);
 // GLAPI void APIENTRY glStencilMaskSeparate (GLenum face, GLuint mask);
+
 // GLAPI void APIENTRY glAttachShader (GLuint program, GLuint shader);
+func GlAttachShader(program, shader GLuint) {
+	C.fn_bridge_void_GLuint_GLuint(C.glAttachShader, C.GLuint(program), C.GLuint(shader))
+}
+
 // GLAPI void APIENTRY glBindAttribLocation (GLuint program, GLuint index, const GLchar *name);
+
 // GLAPI void APIENTRY glCompileShader (GLuint shader);
+func GlCompileShader(shader GLuint) {
+	C.fn_bridge_void_GLuint(C.glCompileShader, C.GLuint(shader))
+}
+
 // GLAPI GLuint APIENTRY glCreateProgram (void);
+func GlCreateProgram() GLuint {
+	return GLuint(C.fn_bridge_GLuint(C.glCreateProgram))
+}
+
 // GLAPI GLuint APIENTRY glCreateShader (GLenum type);
+func GlCreateShader(_type GLenum) GLuint {
+	var res = C.fn_bridge_GLuint_GLenum(C.glCreateShader, C.GLenum(_type))
+	return GLuint(res)
+}
+
 // GLAPI void APIENTRY glDeleteProgram (GLuint program);
 // GLAPI void APIENTRY glDeleteShader (GLuint shader);
 // GLAPI void APIENTRY glDetachShader (GLuint program, GLuint shader);
 // GLAPI void APIENTRY glDisableVertexAttribArray (GLuint index);
+
 // GLAPI void APIENTRY glEnableVertexAttribArray (GLuint index);
+func GlEnableVertexAttribArray(index GLuint) {
+	C.fn_bridge_void_GLuint(C.glEnableVertexAttribArray, C.GLuint(index))
+}
+
 // GLAPI void APIENTRY glGetActiveAttrib (GLuint program, GLuint index, GLsizei bufSize, GLsizei *length, GLint *size, GLenum *type, GLchar *name);
 // GLAPI void APIENTRY glGetActiveUniform (GLuint program, GLuint index, GLsizei bufSize, GLsizei *length, GLint *size, GLenum *type, GLchar *name);
 // GLAPI void APIENTRY glGetAttachedShaders (GLuint program, GLsizei maxCount, GLsizei *count, GLuint *shaders);
+
 // GLAPI GLint APIENTRY glGetAttribLocation (GLuint program, const GLchar *name);
+func GlGetAttribLocation(program GLuint, name string) GLint {
+	var name_c = C.CString(name)
+	defer C.free(unsafe.Pointer(name_c))
+	var res = C.fn_GLint_GLuint_GLchar_p(C.glGetAttribLocation, C.GLuint(program), name_c)
+	return GLint(res)
+}
+
 // GLAPI void APIENTRY glGetProgramiv (GLuint program, GLenum pname, GLint *params);
 // GLAPI void APIENTRY glGetProgramInfoLog (GLuint program, GLsizei bufSize, GLsizei *length, GLchar *infoLog);
+
 // GLAPI void APIENTRY glGetShaderiv (GLuint shader, GLenum pname, GLint *params);
+func GlGetShaderiv(
+	shader GLuint,
+	pname GLenum,
+	params *GLint,
+) {
+	var params_c C.GLint
+	C.fn_bridge_void_GLuint_GLenum_GLint_p(C.glGetShaderiv,
+		C.GLuint(shader),
+		C.GLenum(pname),
+		&params_c,
+	)
+
+	*params = GLint(params_c)
+}
+
 // GLAPI void APIENTRY glGetShaderInfoLog (GLuint shader, GLsizei bufSize, GLsizei *length, GLchar *infoLog);
+func GlGetShaderInfoLog(
+	shader GLuint,
+	bufSize int,
+	length *int,
+	infoLog *string,
+) {
+
+	var length_c C.GLsizei
+	var p_infoLog_c = C.malloc(C.ulonglong(bufSize))
+
+	defer C.free(p_infoLog_c)
+
+	C.fn_bridge_void_GLuint_GLsizei_GLsizei_p_GLchar_p(
+		C.glGetShaderInfoLog,
+		C.GLuint(shader),
+		C.GLsizei(bufSize),
+		&length_c,
+		(*C.GLchar)(p_infoLog_c),
+	)
+
+	if nil != length {
+		*length = int(length_c)
+	}
+
+	*infoLog = C.GoString((*C.char)(p_infoLog_c))
+}
+
 // GLAPI void APIENTRY glGetShaderSource (GLuint shader, GLsizei bufSize, GLsizei *length, GLchar *source);
 // GLAPI GLint APIENTRY glGetUniformLocation (GLuint program, const GLchar *name);
 // GLAPI void APIENTRY glGetUniformfv (GLuint program, GLint location, GLfloat *params);
@@ -771,9 +920,80 @@ func GlGenBuffers(n int, buffers []uint32) {
 // GLAPI void APIENTRY glGetVertexAttribPointerv (GLuint index, GLenum pname, void **pointer);
 // GLAPI GLboolean APIENTRY glIsProgram (GLuint program);
 // GLAPI GLboolean APIENTRY glIsShader (GLuint shader);
+
 // GLAPI void APIENTRY glLinkProgram (GLuint program);
+func GlLinkProgram(program GLuint) {
+	C.fn_bridge_void_GLuint(C.glLinkProgram, C.GLuint(program))
+}
+
 // GLAPI void APIENTRY glShaderSource (GLuint shader, GLsizei count, const GLchar *const*string, const GLint *length);
+func GlShaderSource(
+	shader GLuint,
+	count int,
+	_string []string,
+	length []int,
+) /* []func() */ {
+
+	var r []func()
+
+	var string_c = C.malloc(C.ulonglong(count * C.sizeof__gl_cgo_void_ptr))
+	r = append(r, func() { C.free(string_c) })
+
+	var p_string = uintptr(string_c)
+
+	for i := 0; i < count; i++ {
+
+		var s = _string[i]
+		var s_c *C.char
+
+		if nil == length {
+			s_c = C.CString(s)
+		} else {
+			var s_len = length[i]
+			s_c = C.CString(s[:s_len])
+		}
+
+		r = append(r, func() { C.free(unsafe.Pointer(s_c)) })
+
+		var p_string1 = (**C.char)(unsafe.Pointer(p_string))
+		*p_string1 = s_c
+
+		//
+		p_string += uintptr(C.sizeof__gl_cgo_void_ptr)
+	} // for
+
+	defer internal.CallAll(r)
+
+	C.fn_bridge_void_GLuint_GLsizei_GLchar_p_p_GLint_p(
+		C.glShaderSource,
+		C.GLuint(shader),
+		C.GLsizei(count),
+		(**C.char)(string_c),
+		nil,
+	) 
+
+    // return r 
+}
+
+func GlShaderSource1(
+	shader GLuint,
+	_string *string,
+	length *int,
+) {
+	var a1 = []string{*_string}
+	var a2 []int
+	if nil != length {
+		a2 = []int{*length}
+	}
+
+	GlShaderSource(shader, 1, a1, a2)
+}
+
 // GLAPI void APIENTRY glUseProgram (GLuint program);
+func GlUseProgram(program GLuint) {
+	C.fn_bridge_void_GLuint(C.glUseProgram, C.GLuint(program))
+}
+
 // GLAPI void APIENTRY glUniform1f (GLint location, GLfloat v0);
 // GLAPI void APIENTRY glUniform2f (GLint location, GLfloat v0, GLfloat v1);
 // GLAPI void APIENTRY glUniform3f (GLint location, GLfloat v0, GLfloat v1, GLfloat v2);
@@ -830,7 +1050,40 @@ func GlGenBuffers(n int, buffers []uint32) {
 // GLAPI void APIENTRY glVertexAttrib4ubv (GLuint index, const GLubyte *v);
 // GLAPI void APIENTRY glVertexAttrib4uiv (GLuint index, const GLuint *v);
 // GLAPI void APIENTRY glVertexAttrib4usv (GLuint index, const GLushort *v);
+
 // GLAPI void APIENTRY glVertexAttribPointer (GLuint index, GLint size, GLenum type, GLboolean normalized, GLsizei stride, const void *pointer);
+func GlVertexAttribPointer(
+	index GLuint,
+	size int,
+	_type GLenum,
+	normalized bool,
+	stride int,
+	pointer unsafe.Pointer,
+) {
+
+	if nil != pointer {
+		panic("GlVertexAttribPointer: Check here!!")
+	}
+
+	var normalized_c C.GLboolean
+	if normalized {
+		normalized_c = C.GL_TRUE
+	} else {
+		normalized_c = C.GL_FALSE
+	}
+
+	C.fn_bridge_void_GLuint_GLint_GLenum_GLboolean_GLsizei_void_p(
+		C.glVertexAttribPointer,
+		C.GLuint(index),
+		C.GLint(size),
+		C.GLenum(_type),
+		normalized_c,
+		C.GLsizei(stride),
+		nil,
+	)
+
+}
+
 // #endif
 // #endif /* GL_VERSION_2_0 */
 
@@ -1239,7 +1492,20 @@ func GlGenBuffers(n int, buffers []uint32) {
 // GLAPI void APIENTRY glVertexAttribI4ubv (GLuint index, const GLubyte *v);
 // GLAPI void APIENTRY glVertexAttribI4usv (GLuint index, const GLushort *v);
 // GLAPI void APIENTRY glGetUniformuiv (GLuint program, GLint location, GLuint *params);
+
 // GLAPI void APIENTRY glBindFragDataLocation (GLuint program, GLuint color, const GLchar *name);
+func GlBindFragDataLocation(program GLuint, color GLuint, name string) {
+
+	var name_c = C.CString(name)
+	defer C.free(unsafe.Pointer(name_c))
+
+	C.fn_bridge_void_GLuint_GLuint_GLchar_p(C.glBindFragDataLocation,
+		C.GLuint(program),
+		C.GLuint(color),
+		name_c,
+	)
+}
+
 // GLAPI GLint APIENTRY glGetFragDataLocation (GLuint program, const GLchar *name);
 // GLAPI void APIENTRY glUniform1ui (GLint location, GLuint v0);
 // GLAPI void APIENTRY glUniform2ui (GLint location, GLuint v0, GLuint v1);
@@ -1280,9 +1546,36 @@ func GlGenBuffers(n int, buffers []uint32) {
 // GLAPI void APIENTRY glFramebufferTextureLayer (GLenum target, GLenum attachment, GLuint texture, GLint level, GLint layer);
 // GLAPI void *APIENTRY glMapBufferRange (GLenum target, GLintptr offset, GLsizeiptr length, GLbitfield access);
 // GLAPI void APIENTRY glFlushMappedBufferRange (GLenum target, GLintptr offset, GLsizeiptr length);
+
 // GLAPI void APIENTRY glBindVertexArray (GLuint array);
+func GlBindVertexArray(array GLuint) {
+	C.fn_bridge_void_GLuint(C.glBindVertexArray, C.GLuint(array))
+}
+
 // GLAPI void APIENTRY glDeleteVertexArrays (GLsizei n, const GLuint *arrays);
+
 // GLAPI void APIENTRY glGenVertexArrays (GLsizei n, GLuint *arrays);
+func GlGenVertexArrays(n int, arrays []GLuint) {
+
+	var arrays_c = C.malloc(C.ulonglong(n * C.sizeof_GLuint))
+	defer C.free(arrays_c)
+
+	C.fn_bridge_void_GLsizei_GLuint_p(C.glGenVertexArrays, C.GLsizei(n), (*C.GLuint)(arrays_c))
+
+	var p = uintptr(arrays_c)
+	for i := 0; i < n; i++ {
+		var p1 = (*C.GLuint)(unsafe.Pointer(p))
+		arrays[i] = GLuint(*p1)
+		p += uintptr(C.sizeof_GLuint)
+	} // for
+}
+
+func GlGenVertexArrays1(arrays *GLuint) {
+	var a = make([]GLuint, 1)
+	GlGenVertexArrays(1, a)
+	*arrays = a[0]
+}
+
 // GLAPI GLboolean APIENTRY glIsVertexArray (GLuint array);
 // #endif
 // #endif /* GL_VERSION_3_0 */

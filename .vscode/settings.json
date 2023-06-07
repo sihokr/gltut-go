@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "gl.h": "c",
+        "glew.h": "c",
+        "glext.h": "c"
+    }
+}
