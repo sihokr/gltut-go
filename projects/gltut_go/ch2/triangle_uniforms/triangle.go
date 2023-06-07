@@ -3,7 +3,8 @@ package main
 import (
 	"fmt"
 	"os"
-	_ "runtime"
+	"runtime"
+	"time"
 
 	"example.com/gltut_go/gl"
 	"example.com/gltut_go/sdl2"
@@ -17,7 +18,7 @@ var vertices = []float32{
 
 func main() {
 
-	// runtime.LockOSThread()
+	runtime.LockOSThread()
 
 	sdl2.SDL_Init(sdl2.SDL_INIT_VIDEO)
 
@@ -73,10 +74,12 @@ func main() {
 
 	var pos_attr = gl.GlGetAttribLocation(prog, "position")
 	checkGlError()
-	gl.GlVertexAttribPointer(gl.GLuint(pos_attr), 2, gl.GL_FLOAT, false, 0, nil)
+	gl.GlVertexAttribPointer(gl.GLuint(pos_attr), 2, gl.GL_FLOAT, false, 0, 0)
 	checkGlError()
 	gl.GlEnableVertexAttribArray(gl.GLuint(pos_attr))
 	checkGlError()
+
+	var color_uni = gl.GlGetUniformLocation(prog, "triangleColor")
 
 main_loop:
 	for {
@@ -98,6 +101,14 @@ main_loop:
 				}
 			}
 		} // if
+
+		var red float32
+		{
+			var now = time.Now().UnixMicro()
+			red = float32(now%1000_000) / 1000_000
+		}
+
+		gl.GlUniform3f(color_uni, red, 0, 0)
 
 		gl.GlDrawArrays(gl.GL_TRIANGLES, 0, 3)
 		checkGlError()

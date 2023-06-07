@@ -92,4 +92,20 @@ static inline void fn_bridge_void_GLuint_GLint_GLenum_GLboolean_GLsizei_void_p(
     fn(a1, a2, a3, a4, a5, a6);
 }
 
+// GLAPI GLint APIENTRY glGetUniformLocation (GLuint program, const GLchar *name);
+static inline GLint fn_bridge_GLint_GLuint_GLchar_p(
+    GLint (*fn)(GLuint, GLchar *),
+    GLuint a1, GLchar *a2)
+{
+    return fn(a1, a2);
+}
+
+// GLAPI void APIENTRY glUniform3f (GLint location, GLfloat v0, GLfloat v1, GLfloat v2);
+static inline void fn_bridge_void_GLint_GLfloat_GLfloat_GLfloat(
+    void (*fn)(GLint, GLfloat, GLfloat, GLfloat),
+    GLint a1, GLfloat a2, GLfloat a3, GLfloat a4)
+{
+    fn(a1, a2, a3, a4);
+}
+
 #endif // _fn_bridge_h_

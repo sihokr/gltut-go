@@ -29,7 +29,7 @@ func main() {
 	var context sdl2.SDL_GLContext = sdl2.SDL_GL_CreateContext(window)
 
 	// This has to be called AFTER OpenGL context creation!!
-	gl.GlewInit()
+	gl.GlewInit(true)
 
 	var buffers = make([]gl.GLuint, 1)
 	gl.GlGenBuffers(1, buffers)

@@ -7,6 +7,7 @@ package gl
 // #include <GL/gl.h>
 //
 import "C"
+import "unsafe"
 
 // typedef unsigned int GLenum;
 type GLenum uint32
@@ -799,7 +800,22 @@ func GlDrawArrays(mode GLenum, first int, count int) {
 }
 
 // WINGDIAPI void APIENTRY glDrawBuffer(GLenum mode);
+
 // WINGDIAPI void APIENTRY glDrawElements(GLenum mode,GLsizei count,GLenum type,const GLvoid *indices);
+func GlDrawElements(
+	mode GLenum,
+	count int,
+	_type GLenum,
+	indices int,
+) {
+	C.glDrawElements(
+		C.GLenum(mode),
+		C.GLsizei(count),
+		C.GLenum(_type),
+		unsafe.Pointer(uintptr(indices)),
+	)
+}
+
 // WINGDIAPI void APIENTRY glDrawPixels(GLsizei width,GLsizei height,GLenum format,GLenum type,const GLvoid *pixels);
 // WINGDIAPI void APIENTRY glEdgeFlag(GLboolean flag);
 // WINGDIAPI void APIENTRY glEdgeFlagPointer(GLsizei stride,const GLvoid *pointer);

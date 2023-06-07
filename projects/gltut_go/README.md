@@ -2,15 +2,20 @@
 
 Project structure:
 
-* Cgo wrapper code: 
+* Cgo wrappers: 
 
     - [`gl`](gl) - OpenGL  & Glew
-    - [`sdl2`]() - SDL2
+    - [`sdl2`](sdl2) - SDL2
 
 * Executables (in order of tutorial chapters):
 
-    - [`setup`]()
-    - [`triangle`]()
+    - [`ch1/setup`](ch1/setup)
+    - [`ch2/triangle`](ch2/triangle)
+    - [`ch2/triangle_uniforms`](ch2/triangle_uniforms)
+    - [`ch2/triangle_colors`](ch2/triangle_colors)
+    - [`ch2/triangle_elements`](ch2/triangle_elements)
+    - [`ch2/triangle_invert`](ch2/triangle_invert)
+    - [`ch2/triangle_gray`](ch2/triangle_gray)
 
 
 To build an executable, `cd` into its directory then run `go build`.

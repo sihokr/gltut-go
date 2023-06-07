@@ -608,6 +608,33 @@ func GlBufferData_f(target GLenum, len int, data []float32, usage GLenum) {
 	)
 }
 
+func GlBufferData_i32(target GLenum, len int, data []int, usage GLenum) {
+
+	const e_size = C.sizeof_GLuint
+
+	var data_c = C.malloc(C.ulonglong(len * e_size))
+	{
+		var p = uintptr(data_c)
+		for i := 0; i < len; i++ {
+			var p1 = (*C.GLuint)(unsafe.Pointer(p))
+			*p1 = C.GLuint(data[i])
+			p += uintptr(e_size)
+		} // for
+	}
+
+	defer C.free(data_c)
+
+	var size = len * e_size
+
+	C.fn_bridge_void_GLenum_GLsizeiptr_void_p_GLenum(
+		C.glBufferData,
+		C.GLenum(target),
+		C.GLsizeiptr(size),
+		data_c,
+		C.GLenum(usage),
+	)
+}
+
 // GLAPI void APIENTRY glBufferSubData (GLenum target, GLintptr offset, GLsizeiptr size, const void *data);
 // GLAPI void APIENTRY glGetBufferSubData (GLenum target, GLintptr offset, GLsizeiptr size, void *data);
 // GLAPI void *APIENTRY glMapBuffer (GLenum target, GLenum access);
@@ -911,7 +938,17 @@ func GlGetShaderInfoLog(
 }
 
 // GLAPI void APIENTRY glGetShaderSource (GLuint shader, GLsizei bufSize, GLsizei *length, GLchar *source);
+
 // GLAPI GLint APIENTRY glGetUniformLocation (GLuint program, const GLchar *name);
+func GlGetUniformLocation(program GLuint, name string) GLint {
+
+	var name_c = C.CString(name)
+	defer C.free(unsafe.Pointer(name_c))
+
+	var res = C.fn_bridge_GLint_GLuint_GLchar_p(C.glGetUniformLocation, C.GLuint(program), name_c)
+	return GLint(res)
+}
+
 // GLAPI void APIENTRY glGetUniformfv (GLuint program, GLint location, GLfloat *params);
 // GLAPI void APIENTRY glGetUniformiv (GLuint program, GLint location, GLint *params);
 // GLAPI void APIENTRY glGetVertexAttribdv (GLuint index, GLenum pname, GLdouble *params);
@@ -970,9 +1007,9 @@ func GlShaderSource(
 		C.GLsizei(count),
 		(**C.char)(string_c),
 		nil,
-	) 
+	)
 
-    // return r 
+	// return r
 }
 
 func GlShaderSource1(
@@ -996,7 +1033,17 @@ func GlUseProgram(program GLuint) {
 
 // GLAPI void APIENTRY glUniform1f (GLint location, GLfloat v0);
 // GLAPI void APIENTRY glUniform2f (GLint location, GLfloat v0, GLfloat v1);
+
 // GLAPI void APIENTRY glUniform3f (GLint location, GLfloat v0, GLfloat v1, GLfloat v2);
+func GlUniform3f(location GLint, v0, v1, v2 float32) {
+	C.fn_bridge_void_GLint_GLfloat_GLfloat_GLfloat(C.glUniform3f,
+		C.GLint(location),
+		C.GLfloat(v0),
+		C.GLfloat(v1),
+		C.GLfloat(v2),
+	)
+}
+
 // GLAPI void APIENTRY glUniform4f (GLint location, GLfloat v0, GLfloat v1, GLfloat v2, GLfloat v3);
 // GLAPI void APIENTRY glUniform1i (GLint location, GLint v0);
 // GLAPI void APIENTRY glUniform2i (GLint location, GLint v0, GLint v1);
@@ -1058,12 +1105,12 @@ func GlVertexAttribPointer(
 	_type GLenum,
 	normalized bool,
 	stride int,
-	pointer unsafe.Pointer,
+	pointer int,
 ) {
 
-	if nil != pointer {
-		panic("GlVertexAttribPointer: Check here!!")
-	}
+	// if nil != pointer {
+	// 	panic("GlVertexAttribPointer: Check here!!")
+	// }
 
 	var normalized_c C.GLboolean
 	if normalized {
@@ -1072,14 +1119,23 @@ func GlVertexAttribPointer(
 		normalized_c = C.GL_FALSE
 	}
 
+	var stride_bytes, pointer_bytes int
+	switch _type {
+	case GL_FLOAT:
+		stride_bytes = 4 * stride
+		pointer_bytes = 4 * pointer
+	default:
+		panic("To be implemented")
+	} // switch
+
 	C.fn_bridge_void_GLuint_GLint_GLenum_GLboolean_GLsizei_void_p(
 		C.glVertexAttribPointer,
 		C.GLuint(index),
 		C.GLint(size),
 		C.GLenum(_type),
 		normalized_c,
-		C.GLsizei(stride),
-		nil,
+		C.GLsizei(stride_bytes),
+		unsafe.Pointer(uintptr(pointer_bytes)),
 	)
 
 }
